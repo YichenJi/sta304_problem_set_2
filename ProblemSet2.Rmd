@@ -1,0 +1,301 @@
+---
+title: ' Age, religious affiliation, marital status, and income have a strong relationship
+  with Canadian residents'' life satisfaction.'
+author: "Yichen Ji, Jinyu Luo, Jialin Shang, Yuexi Xiao"
+date: "October 19th, 2020"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Abstract
+
+  This study explores the relationship between Canadian residents' 'feeling of living' and other variables provided in the 2017 Canadian General Social Survey(GSS). A logistic regression model for survey data is used to explain the relationship with the response variable and predictor variables. The result suggests that age, religious affiliation, marital status and income have explanatory power on the variations in 'feeling of living'. This research is significant since it can help researchers to decide factors related to Canadian residents’ life satisfaction for sociological purposes.
+
+# Introduction
+
+  With well-developed public health and education system, Canada always ranks No.1 of the best country, providing citizens with a high quality of life in most of life quality research. While the evaluation of well-being is positively associated with personal feelings, the objective of this paper is exploring the subjective well-being of Canadian of different ages in different economic classes and whether religious affiliation and marital status would have impacts on it. The dataset chosen for this paper is the 2017 General Social Survey on households. A comparison of participants' self-evaluation was performed mainly by descriptive analyses. Logistic regression is applied to identify the associations between factors listed previously.
+
+  The next few paragraphs explain why previously listed variables are interested and the motivation to include them in the analysis.
+
+  First, we considered psychological factors that may correlate with individuals' 'feeling of living'. One typical psychological factor is stress level, and the variation in people's stress level is very likely to differ regarding their age and gender. 
+
+  For the age factor, individuals of working age are expected to suffer greater stress than others. The expectation of life satisfaction of individuals not in the working-age is higher than the others. For the gender factor, research has shown that the understanding of happiness between men and women is different (Dowthwaite, 2020). Meanwhile, males tend to have a better ability to withstand stress and become satisfied. Therefore, age and gender are included in the modelling process, and the null hypothesis is that age and gender do not affect individuals' 'feeling of living'.
+
+
+  On the other hand, people with different religious beliefs have different perceptions of happiness. Among all religious beliefs, the most significant difference will be between believers and non-believers. People with strong religious faith are generally more confident and have better psychological adjustment than others (Pappas, 2012). Doctrines in religions often advise believers to be grateful to live, which improves believers' satisfaction with life. Therefore, the study is interested in religious affiliation's impact on individuals' 'feelings of living'.
+
+  Moreover, various researches suggest that people obtain satisfaction from getting married. However, after the marriage, the increase in happiness becomes small as time passes (Lucas, Clark, Georgellis, & Diener, 2003). Therefore, it is worthy of studying the impact of getting married on personal life satisfaction, which suggests the inclusion of marital status in the model. Interestingly, the regression model showed a negatively correlated relationship between single status and satisfaction rate. 
+
+  In addition, Daniel Kahneman and Angus Deaton's research suggests that high income will also improve people's living (Kahneman & Deaton, 2010). Therefore, income is a crucial factor that may affect personal satisfaction in life. Since people obtain utilities from consumptions and the amount of consumption is strongly correlated with income, it is essential to treat income as a candidate predictor for the model. 
+
+# Data
+
+## Introducing the raw data.
+
+  Data used in the study is the General Social Survey (abbreviated as GSS). GSS was established in 1985. It was designed to gather data on Canadian social trends and inform specific social policy issues. Every survey collects socio-demographic information of Canadian households. GSS lasted from February 2nd to November 30th. The cross-sectional data used in GSS helps analyze social trends, test and develop new concepts.
+
+  The frame of the survey consists of two different components. One is lists of telephone numbers, while the other is the residential information of individuals called Address Register (AR). The survey groups all telephone numbers for the same address and sort by their source and type to select the best available telephone number. Besides, approximately 86% of available telephone numbers were linked to AR.
+
+  Statistics Canada used stratified sampling to collect data. Stratified sampling first divides the population into homogeneous subpopulations. In our case, Statistics Canada divided the target population into ten provinces, and each of them was divided into geographic areas. Then collect samples from each subpopulation using simple random sampling without replacement. After that, Statistics Canada randomly selected a respondent from each household and asked an initial set of questions to examine the respondent's eligibility further. After the second round of selection, 91.8% of the selected numbers were considered eligible.
+
+  The 2017 GSS's target population is all people above 15 years old in Canada, excluding Yukon, Northwest Territories, Nunavut, and full-time residents of institutions. For the survey, the sample size was 20,000, while the number of actual respondents was 20,602. Data was collected by computer-assisted telephone interviews (CATI). Five offices of Statistics Canada contacted the interviewees via phone calls. For those who refused to participate at first, Statistics Canada would reach them again, up to two more times. Statistics Canada grouped non-response into three types: no auxiliary information, some auxiliary information and auxiliary information from various sources. Then they finished the non-response adjustment in three stages. In general, they selected useful information to the model propensity to respond and drop the non-responding telephone numbers. The adjustment results in a 52.4% overall response rate. 
+
+  Overall, GSS provides a high-quality survey and tracks social trends over time. Diversified data from different geographical regions ensure the representativeness of the sample. Moreover, GSS is able to spot changes in the pattern since the investigation has lasted for decades. 
+
+  However, there still are limitations. A sample size of 20,000 is considered insufficient for a cross-sectional survey over Canada. Since not all areas are involved in the GSS survey, there might be slight differences between the expected trends and actual trends. Moreover, there are many 'N/A's in the dataset, decreasing the number of effective information for the research.
+
+## Modified data set used in the study.
+
+  The variables we selected are 'age', 'sex', 'religious affiliation', 'marital status', 'income' and 'feeling of living'. 'Age' indicates the age of that respondent in 2017. 'Sex' is the genders, either male or female. 'religious affiliation' has three types of observations: has religion, no religion and does not know. 'Maritual_status' has several results: single and never married, living common law, married, separated, widowed and divorced. 'income_family' shows the different levels of family income. Last, 'feelings_life' reveals how people rated their current lives in the year of 2017. 
+
+  When we were browsing and selecting variables, we found similar groups, such as religion_importance and religion_participation. The first one indicates how respondents rated religion in their lives, and the second one shows how many times people went to religious parties. These two variables are similar because they can both show the importance of religion in people's lives. As compared with religion_has_affiliation, those two variables are too detailed. 
+
+  During the data cleaning process, we removed 'NA' in 'feeling of living' and removed 'Do not Know' in 'religious affiliation' since they do not carry useful information in our study. After that, we divided 'feeling of living' into two groups, 'Satisfied' and 'Not satisfied,' based on whether the number is greater than 5. Besides, we combined all marital_status and divided them into 'Single" and "Married.'
+
+# Model
+
+``````{r, include = FALSE}
+library(dplyr)
+library(tidyverse)
+setwd("/Users/mj/Desktop/STA304/Assignment/2")
+gss_data <- read_csv("gss_process.csv")
+
+```
+
+  The model used in the study is the survey logistic regression model. The reason for using the logistics model is that our dependent variable is a binary response variable. The model captures the relationship between explanatory variables and the response variable through the following equation:
+
+$$
+\log\frac{p}{1-p} = \beta_0 + \beta_1 X_{1} + \beta_2X_{2}+...+\beta_nX_{n}
+$$
+
+  The left-hand side of the equation transforms a 'Yes or No' binary response to represent the probability of observing a 'Yes' response. 'P' represents the probability that the individuals are satisfied with their lives, given the value of their explanatory variables. Each beta in the equation represents the average marginal effect on the response variable when the value of the corresponding predictor changes by 1.
+
+``````{r, echo = FALSE}
+# Data Cleaning
+data <- gss_data %>%
+  filter(feelings_life != 'NA') %>%
+  filter(religion_has_affiliation != 'Don\'t Know') %>%
+  mutate(feeling = ifelse(feelings_life > 5, 'Satisfied', 'Not satisfied')) %>%
+  mutate(marital = ifelse(marital_status %in% c("Divorced", "Separated", 
+                                   "Single, never married",
+                                   "Windowed"), 'Single', 'Married')) %>%
+  mutate(religious_affiliation = ifelse(religion_has_affiliation == 
+                                          'Has religious affiliation', 'Yes',
+                                        'No'))
+
+#Set up for the model
+
+# Modify the data for running logistic regression.
+data$sex <- as.factor(data$sex)
+data$religious_affiliation <- as.factor(data$religious_affiliation)
+data$income_family <- as.factor(data$income_family)
+data$marital <- as.factor(data$marital)
+data$feeling <- as.factor(data$feeling)
+data <- data %>%
+  dplyr::select(feeling, age, sex, religious_affiliation, income_family, 
+                marital)
+
+# Split the data into training and testing set for further analysis,
+set.seed(304)
+prep <- sample(1:nrow(data), size = nrow(data)/2)
+train_set <- data[prep,]
+test_set <- data[-prep,]
+test_set <- data[1:nrow(test_set)-1,]
+```
+
+  Before fitting the model, the data requires further modification to ensure modelling and analysis go smoothly. First, each categorical variable is converted into numeric values for the requirement of R Studio. Then, the data is randomly split into training and testing sets. The logistic regression model is built on the training set, while the testing set is used to validate the model.
+
+  After finishing all preparations for fitting the model, the selection process starts by finding variables that best describe the variations in 'feeling of living' among all candidate variables. The selection uses AIC to examine the goodness of fit and complexity of the model using every combination of variables. Among all combinations of variables, the one generating the lowest value of AIC of the model is selected to be the most suitable combination of variables.
+
+  In the next step, the logistic regression model for survey data is built to explain the relationship between age, religious affiliation, income, marital status and 'feeling of living'. Using a survey designed model is because the data collection is conducted through the form of a survey. Moreover, consider the survey targets at a finite population. The survey designed model allows conducting finite population corrections (abbreviated as fpc), giving a more accurate estimation of the fitted model's variance. The fpc uses 30,633,177 as of the population of the survey, which is provided by Statistics Canada. (Government of Canada, Statistics Canada, 2020)
+
+  After the model is built, a t-test will be used to check whether each estimated parameter is significant under the null hypothesis that all predictors have no explanatory power on the response. The test calculates the p-value for each estimated parameter using the 5% significance level as the criterion. The p-value is the probability that the estimated results are as extreme as the observed result assuming the null hypothesis holds.
+
+  The validation process uses the model to make predictions for observations in the test set. Then, use the prediction result to draw the ROC curve to present the fitted model's correctness of prediction. The ROC curve (receiver operating characteristic curve) illustrates the diagnostics ability of the model. After generating the ROC curves, AUC is calculated by measuring the area under the ROC curve. The value of AUC reflects the percentage of variations in the data that is captured by the fitted model.
+
+
+# Results
+
+## Data Visualization
+```{r}
+data %>% 
+  ggplot(aes(x=feeling))+
+  geom_bar()+
+  xlab("Feelings of Life") +
+  ylab("Number of people") +
+  labs(title="Figure1. Bar plot Feeling of living")
+```
+
+  Figure 1 is the bar plot of 'feeling of life'. It suggests that most of the participants feel satisfied with the current living status. There are less than 2500 people who feel unsatisfied and more than 20000 people feel satisfied. 
+
+``````{r}
+data %>% 
+  ggplot(aes(x=feeling, fill = income_family))+
+  geom_bar()+
+  xlab("Feelings of life") +
+  ylab("Number of people") +
+  labs(title="Figure2. Feeling of living with different income level")
+```
+
+## Income
+
+  Figure 2 plots 'feeling of living' with different 'income' which suggests that most families with '\$125,000 and more' are satisfied. The family who earns 'less than $25,000' is mainly unsatisfied. 
+
+Moreover, the distribution of different income families in the plot indicates that middle-class and least-income families are the majority of unsatisfied individuals. One possible reason is that these individuals are either struggling to survive or seek great improvements in their living status.
+
+The bar plot suggests that people with higher incomes are more likely to be satisfied, which shows that satisfaction will increase when income level increases. Although there are few fluctuations, they do not affect the overall trend. Furthermore, families with the highest income hold the smallest percentage among all respondents. However, the second level below that has the largest number. It shows that the majority of families in Canada are middle-class. 
+
+``````{r}
+data %>% 
+  ggplot(aes(x=feeling, fill = marital))+
+  geom_bar()+
+  xlab("Feelings of life") +
+  ylab("Number of people") +
+  labs(title="Figure3. Feeling of living with different marital status")
+```
+
+## Marital
+
+  Figure 3 plots the 'feeling of living' with different 'marital status'. It suggests that people who are married are more likely to be satisfied than single people. Although the number of people who feel unsatisfied with both single and married is almost the same, more married people(about 17000) feel satisfied than the single one(about 6000). 
+
+  The distribution of people of different marital status suggests that most participants are married. The incredibly high ratio of married people in 'satisfied' suggests that marriage can bring happiness to people's lives. One possible reason is that stress level is lower since the partner can share the stress.  
+
+``````{r}
+data %>% 
+  ggplot(aes(x=feeling, fill = religious_affiliation))+
+  geom_bar()+
+  xlab("Feelings of Life") +
+  ylab("Number of people") +
+  labs(title="Figure4. Feeling of living in different religious affiliation")
+```
+
+## Religious affiliation
+
+  Figure 4  plots the 'feeling of living' with 'religious affiliation.' It suggests that people who believe in religion are less likely to be satisfied than people who do not. There are about 500 non-religious people who are unsatisfied and about 2000 religious people who are unsatisfied. Furthermore, about 2750 non-religious people are satisfied and about 20,250 religious people who are satisfied. 
+
+  According to the numeric result above, it suggests that there are more religious people who feel satisfied than non-religious people. It is because beliefs help people reach self-satisfaction. 
+
+``````{r}
+data %>% 
+  ggplot(aes(x=feeling, fill = sex))+
+  geom_bar()+
+  xlab("Feelings of life") +
+  ylab("Number of people") +
+  labs(title="Figure5. Feeling of living in different gender")
+```
+
+## Gender
+
+Figure 5 plots the 'feeling of living' with 'sex'. The plot shows that satisfaction between both males and females are relatively the same. This suggests that there is no relationship between 'gender' and the 'feeling of living.' 
+
+## Results of the model
+
+``````{r, include=FALSE}
+# Use stepAIC to select variables for the final model
+library(MASS)
+
+# Fit the model
+model <- glm(feeling ~., data = train_set, family = 'binomial') %>%
+  stepAIC(trace = TRUE)
+
+# Summarize the final selected model
+summary(model)
+```
+
+  The result of step AIC variable selection shows that age, religious affiliation, income, and marital status are the best variables in explaining the variations in 'feelings of living'. The results exclude sex from the model, indicating no significant difference between 'feeling of living' between males and females. Therefore, it fails to reject the null hypothesis that there is no significant difference between males and females' 'feeling of living'.
+
+```{r, include=FALSE}
+# This chunk uses variables selected in the previous step to build the survey logistic regression model.
+library(survey)
+# Finite population correction
+N = 30633177
+n = nrow(train_set)
+fpc.srs <- rep(N, n)
+est.design <- svydesign(id=~1, data = train_set, fpc = fpc.srs)
+
+# Fit the model
+glm.est <- svyglm(feeling ~ age + religious_affiliation + marital + income_family, est.design, family = "binomial")
+```
+
+```{r, echo=FALSE}
+# Summarize the model
+summary(glm.est)
+```
+
+  The summary of the survey logistic regression model shows that most estimated parameters have a p-value of less than 0.05, indicating the estimation is significant. The variation in satisfaction of life can be captured by the following equation:
+$$
+\log\frac{p}{1-p} = 3.674 - 0.006 \times Age + 0.292 \times Has Religous Affiliation - 0.440 \times Single \\
+- 0.241 \times(Income Family \$125,000 and more) -1.120 (\times Income Family \$25,000 to \$49,999) \\
+-0.740 \times (Income Family \$50,000 to \$74,999) -0.657 \times (Income Family \$75,000 to \$99,999) \\
+-1.626 \times (Income Family Less than \$25,000)
+$$
+
+  The interpretations of estimated coefficients are similar. Take marital status as an example, and consider a single individual. The log odds of 'feelings of living' of this individual are expected to be 0.44 lower than those who are married, while all other variables remain constant.
+
+```{r, include=FALSE}
+#Validating the model
+
+# Use ROC curve to check the goodness of the model
+library(pROC)
+predict1 <- predict(glm.est,newdata=test_set,type="response")
+roc_logit <- roc(test_set$feeling~predict1)
+TPR <- roc_logit$sensitivities
+FPR <- 1-roc_logit$specificities
+```
+
+```{r, echo=FALSE}
+plot(FPR,TPR,xlim=c(0,1),ylim=c(0,1),type='l',lty=1,lwd=2,col='red')
+abline(a=0,b=1,lty=2,col='blue')
+text(0.7,0.4,label=paste("AUC=",round(auc(roc_logit),2)))
+```
+  The AUC statistic reflects that 67% of the model's prediction matches the test data set's observation. The result indicates that the model is generally accurate in predicting the probability of being satisfied with life given the model's predictors.
+
+
+# Discussion
+
+## Conclusion
+
+  Overall, the results suggest that 'age,' 'religious affiliation,' 'marital status' and 'income' have explanatory power on variations in 'feelings of life.' The fitted logistic regression model can capture the general relationship between predictors and the response and make predictions. The study enhances the sociological understanding of factors affecting individuals' satisfaction with life. 
+
+## Limitation of the data set
+
+  Since the proportion of different income level observations is not evenly distributed in the data, it causes bias. Therefore, the sample may not be a good representation of the population. The same condition applies to predictors' religious affiliation'.
+
+  Besides, satisfaction is subjective. Participants are very likely to define their satisfactions based on the mood on the interview day, resulting in biases in the analysis. The answer may change if the interview is conducted on a different day. Therefore, the conclusion becomes less reliable.
+
+## Limitation of the model
+
+  The most crucial assumption of logistic regression models is that the relationship between independent variables and the log odds log(p/(1-p)) is linear. Therefore, if the actual relationship differs from a linear assumption, the estimation of coefficients in the model will be invalid. Besides, it requires no significant multicollinearity for logistic models, which means no strong correlations between independent variables. Since the independent variables in the study are all categorical, it is hard to determine the correlation between variables. Moreover, a 0.67 AUC value indicates that the model cannot capture the remaining one-third variations in the data.
+
+## Possible Improvements
+
+  It can conduct multiple stratified sampling levels during data collection, which ensures the final data set includes equal amounts of observation for different categories. This should reduce the level of biasedness and makes analyses to be more reliable. Moreover, the research could include more variables during the modelling procedure. In particular, numerical variables and objective variables eliminates person biasedness in the data and increases reliability.
+
+# References
+
+Dowthwaite, L. (2020, July 08). Men and women experience happiness differently – here's why. Retrieved from https://theconversation.com/men-and-women-experience-happiness-differently-heres-why-104507
+
+Government of Canada, Statistics Canada. (2020, September 29). Population estimates on July 1st, by age and sex. Retrieved October 20, 2020, from https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1710000501
+
+Kahneman, D., & Deaton, A. (2010). High income improves evaluation of life but not emotional well-being. Proceedings of the National Academy of Sciences, 107(38), 16489-16493. doi:10.1073/pnas.1011492107
+
+Lucas, R. E., Clark, A. E., Georgellis, Y., & Diener, E. (2003). Reexamining adaptation and the set point model of happiness: Reactions to changes in marital status. Journal of Personality and Social Psychology, 84(3), 527-539. doi:10.1037/0022-3514.84.3.527
+
+Pappas, S. (2012, February 10). 8 Ways Religion Impacts Your Life. Retrieved October 18, 2020, from https://www.livescience.com/18421-religion-impacts-health.html
+
+PROC. (n.d.). Retrieved October 19, 2020, from https://www.rdocumentation.org/packages/pROC/versions/1.16.2/topics/roc
+
+
+
+
+
+
+
+
